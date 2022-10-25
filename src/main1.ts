@@ -11,7 +11,7 @@ const app = document.querySelector("#app")!;
 const chart = barChart();
 
 async function update(Station: string) {
-  const data: Table<{ "Main pollutant": Utf8; cnt: Int32 }> = await conn.query(`
+  const data: Table<{ MP: Utf8; cnt: Int32 }> = await conn.query(`
   SELECT MP, count(*)::INT as cnt
   FROM airquality.parquet
   WHERE Station = '${ Station }'
