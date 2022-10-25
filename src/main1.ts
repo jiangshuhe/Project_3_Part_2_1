@@ -10,18 +10,18 @@ const app = document.querySelector("#app")!;
 
 const chart = barChart();
 
-async function update(Station: string) {
-  const data: Table<{ MP: Utf8; cnt: Int32 }> = await conn.query(`
-  SELECT MP, count(*)::INT as cnt
+async function update(City: string) {
+  const data: Table<{ "Main pollutant": Utf8; cnt: Int32 }> = await conn.query(`
+  SELECT "Main pollutant", count(*)::INT as cnt
   FROM airquality.parquet
-  WHERE Station = '${ Station }'
-  GROUP BY MP
+  WHERE City = '${ City }'
+  GROUP BY "Main pollutant"
   ORDER BY cnt DESC`);
 
   // Get the X and Y columns for the chart. Instead of using Parquet, DuckDB, and Arrow, we could also load data from CSV or JSON directly.
   const X = data.getChild("cnt")!.toArray();
   const Y = data
-    .getChild("MP")!
+    .getChild("Main pollutant")!
     .toJSON()
     .map((d) => `${d}`);
 
@@ -37,20 +37,20 @@ await db.registerFileBuffer(
 // Query DuckDB for the cities.
 const conn = await db.connect();
 
-const Stations: Table<{ Station: Utf8 }> = await conn.query(`
-SELECT DISTINCT Station
+const Cities: Table<{ City: Utf8 }> = await conn.query(`
+SELECT DISTINCT City
 FROM airquality.parquet`);
 
 // Create a select element for the cities.
 const select = d3.select(app).append("select");
-for (const Station of Stations) {
-  select.append("option").text(Station.Station);
+for (const City of Cities) {
+  select.append("option").text(City.City);
 }
 
 select.on("change", async () => {
-  const Station = select.property("value");
+  const City = select.property("value");
 
-  update(Station);
+  update(City);
 });
 
 // Update the chart with the first city.
