@@ -4,24 +4,24 @@ import * as d3 from "d3";
 import { barChart } from "./part2(2)";
 import { Int32, Table, Utf8 } from "apache-arrow";
 import { db } from "./duckdb";
-import parquet from "./airquality.parquet?url";
+import parquet from "./AQ.parquet?url";
 
 const app = document.querySelector("#app")!;
 
 const chart = barChart();
 
 async function update(City: string) {
-  const data: Table<{ "Main pollutant": Utf8; cnt: Int32 }> = await conn.query(`
-  SELECT "Main pollutant", count(*)::INT as cnt
+  const data: Table<{ MP: Utf8; cnt: Int32 }> = await conn.query(`
+  SELECT MP, count(*)::INT as cnt
   FROM airquality.parquet
   WHERE City = '${ City }'
-  GROUP BY "Main pollutant"
+  GROUP BY MP
   ORDER BY cnt DESC`);
 
   // Get the X and Y columns for the chart. Instead of using Parquet, DuckDB, and Arrow, we could also load data from CSV or JSON directly.
   const X = data.getChild("cnt")!.toArray();
   const Y = data
-    .getChild("Main pollutant")!
+    .getChild("MP")!
     .toJSON()
     .map((d) => `${d}`);
 
